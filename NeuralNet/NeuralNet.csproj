@@ -46,6 +46,7 @@
     <Compile Include="Math\Random.cs" />
     <Compile Include="Network\Implementation\InputNeuron.cs" />
     <Compile Include="Network\Implementation\NeuralNetwork.cs" />
+    <Compile Include="Network\Implementation\CalculatedNeuron.cs" />
     <Compile Include="Network\Implementation\Neuron.cs" />
     <Compile Include="Network\Implementation\NeuronConnection.cs" />
     <Compile Include="Network\Interfaces\INeuralNet.cs" />

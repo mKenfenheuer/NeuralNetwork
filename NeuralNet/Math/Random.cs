@@ -8,8 +8,7 @@ namespace NeuralNet.Math
 {
     public class RandomValues
     {
-        private static System.Random random = new System.Random((int)DateTime.Now.Ticks);
-
+        static Random random = new Random((int)DateTime.Now.Ticks);
         public static double RandomDouble()
         {
             return random.NextDouble();
@@ -17,7 +16,7 @@ namespace NeuralNet.Math
 
         public static int RandomInt(int min, int max)
         {
-            return (int) (System.Math.Round(random.NextDouble().Map(0, 1, min, max)));
+            return random.Next(min, max);
         }
     }
 }

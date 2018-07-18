@@ -21,52 +21,44 @@ namespace NeuralNetTester
         }
 
         GeneticEvolver evolver;
-        Bitmap test;
+        int tests = 10;
+        List<double[]> testInputs = new List<double[]>();
         public async Task Run()
         {
+
             evolver = new GeneticEvolver(layerRange: new Tuple<int, int>(3, 6),
                                                             layerLength: new Tuple<int, int>(3, 8),
                                                             evaluationFunc: this.Evaluate,
-                                                            inputs: 30,
+                                                            inputs: 5,
                                                             outputs: 2,
-                                                            maxMutationFactor: 0.1,
-                                                            mutationProbability: 0.3,
+                                                            maxMutationFactor: 0.2,
+                                                            mutationProbability: 0.5,
                                                             netPopulations: 10,
-                                                            netsPerPopulation: 5,
+                                                            netsPerPopulation: 10,
                                                             activationFunction: System.Math.Tanh);
+
+            for (int i = 0; i < tests; i++)
+            {
+                testInputs.Add(RandomDoubles());
+                Console.WriteLine("Generation of test input {0}: [{1}]", i + 1, String.Join(",", testInputs[i]));
+            }
+
             evolver.Init();
-            for (int i = 0; evolver.MaxFitness < 1; i++)
+
+            while (evolver.MaxFitness < 1)
             {
                 await evolver.Evaluate();
                 Console.WriteLine("Generation {0} finished with max fitness {1}", evolver.Generation, evolver.MaxFitness);
                 Console.Title = String.Format("Generation {0}; Max fitness {1}", evolver.Generation, evolver.MaxFitness);
                 evolver.Evolve();
-                await Task.Delay(100);
             }
-        }
 
-        void NewTest()
-        {
-            test = new Bitmap(8, 8);
-            Graphics g = Graphics.FromImage(test);
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-            int ch = RandomValues.RandomInt(48, 122);
-            g.DrawString((char)ch + "", new Font("Arial", 6), Brushes.Black, new Rectangle(0, 0, 8, 8));
-            test.Save("test.bmp");
-            List<double> doubles = new List<double>();
-            for (int x = 0; x < test.Width; x++)
-                for (int y = 0; y < test.Height; y++)
-                {
-                    Color color = test.GetPixel(x, y);
-                    double brightness = color.R + color.G + color.B;
-                    brightness /= 3.0;
-                    doubles.Add(brightness);
-                }
-            BitArray b = new BitArray(new byte[] { (byte)ch });
-            int[] expected = b.Cast<bool>().Select(bit => bit ? 1 : 0).ToArray();
-            double[] inputs = doubles.ToArray();
+            double[] inputs = testInputs[0];
+            double output = evolver.BestNetwork.Calculate(inputs)[0];
+            double expected = inputs.Sum() % 2;
+            double fitness = Fitness(expected, output);
+            Console.WriteLine("Best network calc: IN: [{0}] OUT:{1} EXPECT: {2} FIT: {3}", String.Join(",", inputs), Math.Round(output, 4), expected, fitness);
+            Console.WriteLine("Best network passed with fitness {0}", Evaluate(evolver.BestNetwork));
         }
 
         double[] RandomDoubles()
@@ -79,10 +71,20 @@ namespace NeuralNetTester
 
         double Evaluate(INeuralNet network)
         {
-            double[] inputs = RandomDoubles();
-            double[] outs = network.Calculate(inputs);
-            double expected = inputs.Sum() > 1 ? 1 : 0;
-            return 1 - Math.Abs(outs[0] - expected);
+            double[] fitnessTests = new double[10];
+            for (int i = 0; i < fitnessTests.Length; i++)
+            {
+                double[] inputs = testInputs[i];
+                double[] outs = network.Calculate(inputs);
+                double expected = inputs.Sum() > 1 ? 1 : 0;
+                fitnessTests[i] = Fitness(outs[0], expected);
+            }
+            return fitnessTests.Average();
+        }
+
+        double Fitness(double expected, double real)
+        {
+            return 1 - Math.Abs(real - expected);
         }
     }
 }

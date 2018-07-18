@@ -13,10 +13,8 @@ namespace NeuralNet.Network.Implementation
     {
         Guid guid = Guid.NewGuid();
         public Guid Guid => guid;
-        List<NeuronConnection> connections = new List<NeuronConnection>();
-        List<Neuron> neurons = new List<Neuron>();
+        List<CalculatedNeuron[]> calculatedNeurons = new List<CalculatedNeuron[]>();
         List<InputNeuron> inputNeurons = new List<InputNeuron>();
-        List<Neuron> outputNeurons = new List<Neuron>();
         Func<double, double> activationFunction = System.Math.Tanh;
 
         public double ActivationFunction(double value)
@@ -24,61 +22,39 @@ namespace NeuralNet.Network.Implementation
             return activationFunction(value);
         }
 
-        private NeuralNetwork(List<NeuronConnection> connections, List<Neuron> neurons, List<InputNeuron> inputNeurons, List<Neuron> outputNeurons, Func<double, double> activationFunction)
+        private NeuralNetwork(List<CalculatedNeuron[]> calculatedNeurons, List<InputNeuron> inputNeurons, Func<double, double> activationFunction)
         {
             this.activationFunction = activationFunction;
-            this.connections = connections;
-            this.neurons = neurons;
+            this.calculatedNeurons = calculatedNeurons;
             this.inputNeurons = inputNeurons;
-            this.outputNeurons = outputNeurons;
-
-            connections.ForEach(c => c.NeuralNet = this);
-            neurons.ForEach(n => n.NeuralNet = this);
-            outputNeurons.ForEach(n => n.NeuralNet = this);
         }
 
         public NeuralNetwork(int[] layers, Func<double, double> activationFunction)
         {
             this.activationFunction = activationFunction;
 
-            List<Guid> lastLayer = new List<Guid>();
+            List<Neuron> lastLayer = new List<Neuron>();
             for (int i = 0; i < layers.Length; i++)
             {
-                List<Guid> currentLayer = new List<Guid>();
+                List<Neuron> currentLayer = new List<Neuron>();
                 if (i == 0)
                 {
                     for (int i2 = 0; i2 < layers[i]; i2++)
                         inputNeurons.Add(new InputNeuron());
-                    currentLayer.AddRange(inputNeurons.Select(n => n.Guid));
+                    currentLayer.AddRange(inputNeurons);
                 }
                 else
                 {
                     for (int i2 = 0; i2 < layers[i]; i2++)
                     {
-                        Neuron neuron = new Neuron(this);
-                        foreach (Guid guid in lastLayer)
-                            connections.Add(new NeuronConnection(this, guid, neuron.Guid, 1));
-                        currentLayer.Add(neuron.Guid);
-                        if (i < layers.Length - 1)
-                        {
-                            neurons.Add(neuron);
-                        }
-                        else
-                        {
-                            outputNeurons.Add(neuron);
-                        }
+                        CalculatedNeuron neuron = new CalculatedNeuron(activationFunction);
+                        foreach (Neuron lastNeuron in lastLayer)
+                            neuron.AddConnection(new NeuronConnection(lastNeuron, RandomValues.RandomDouble()));
+                        currentLayer.Add(neuron);
                     }
+                    calculatedNeurons.Add(currentLayer.Cast<CalculatedNeuron>().ToArray());
                 }
                 lastLayer = currentLayer;
-            }
-            Randomize();
-        }
-
-        public void Randomize()
-        {
-            for (int i = 0; i < connections.Count; i++)
-            {
-                connections[i].factor = RandomValues.RandomDouble();
             }
         }
 
@@ -90,19 +66,9 @@ namespace NeuralNet.Network.Implementation
             for (int i = 0; i < inputs.Length; i++)
                 inputNeurons[i].SetInput(inputs[i]);
 
-            neurons.ForEach(n => n.Reset());
+            calculatedNeurons.SelectMany(n => n).ToList().ForEach(n => n.Reset());
 
-            return outputNeurons.Select(n => n.GetValue()).ToArray();
-        }
-
-        public INeuronConnection[] GetConnections(Guid guid)
-        {
-            return connections.Where(c => c.to == guid).ToArray();
-        }
-
-        public INeuron GetNeuron(Guid guid)
-        {
-            return neurons.Where(n => n.Guid == guid).Concat(inputNeurons.Where(n => n.Guid == guid).Cast<INeuron>()).FirstOrDefault();
+            return calculatedNeurons.Last().Select(n => n.GetValue()).ToArray();
         }
 
         public Guid GetGuid()
@@ -112,13 +78,16 @@ namespace NeuralNet.Network.Implementation
 
         internal void Mutate(double probability, double factor)
         {
-            connections.ForEach(c =>
+            calculatedNeurons.SelectMany(n => n).ToList().ForEach(n =>
             {
-                if (RandomValues.RandomDouble() <= probability)
-                {
-                    double mutationFactor = 1 + factor * RandomValues.RandomDouble().Map(0, 1, -1, 1);
-                    c.factor = c.factor * mutationFactor;
-                }
+                n.NeuronConnections.ToList().ForEach(c =>
+               {
+                   if (RandomValues.RandomDouble() <= probability)
+                   {
+                       double mutationFactor = 1 + factor * RandomValues.RandomDouble().Map(0, 1, -1, 1);
+                       c.factor = c.factor * mutationFactor;
+                   }
+               });
             });
         }
 
@@ -136,7 +105,7 @@ namespace NeuralNet.Network.Implementation
 
         public object Clone()
         {
-            return new NeuralNetwork(connections.Clone(), neurons.Clone(), inputNeurons.Clone(), outputNeurons.Clone(), activationFunction);
+            return new NeuralNetwork(calculatedNeurons.Clone(), inputNeurons.Clone(), activationFunction);
         }
     }
 }

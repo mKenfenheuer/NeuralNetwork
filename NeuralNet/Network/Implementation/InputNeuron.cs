@@ -9,13 +9,11 @@ using NeuralNet.Math;
 
 namespace NeuralNet.Network.Implementation
 {
-    class InputNeuron : INeuron
+    class InputNeuron : Neuron
     {
-        private Guid guid = Guid.NewGuid();
-        public Guid Guid => guid;
         private double value = -1;
 
-        public void Reset()
+        public override void Reset()
         {
             value = -1;
         }
@@ -25,21 +23,16 @@ namespace NeuralNet.Network.Implementation
             value = input;
         }
 
-        public double GetValue()
+
+        public override double GetValue()
         {
             return MathF.Clamp(value, 0, 1);
         }
+        
 
-        internal InputNeuron(Guid guid)
+        public override object Clone()
         {
-            this.guid = guid;
-        }
-
-        public InputNeuron() { }
-
-        public object Clone()
-        {
-            return new InputNeuron(guid);
+            return new InputNeuron();
         }
     }
 }

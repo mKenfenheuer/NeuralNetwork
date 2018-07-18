@@ -89,9 +89,9 @@ namespace NeuralNet.Training.GeneticEvolve
                 }
             }
             )));
-            maxFitness = fitnesses.Max(kvp => kvp.Value);
             List<INeuralNetInternal> networkList = networks.Select(kvp => kvp.Value).ToList();
             networkList.Sort((t1, t2) => { return -fitnesses[t1.GetGuid()].CompareTo(fitnesses[t2.GetGuid()]); });
+            maxFitness = fitnesses[networkList[0].GetGuid()];
             bestNetwork = networkList.FirstOrDefault();
         }
 
@@ -102,10 +102,12 @@ namespace NeuralNet.Training.GeneticEvolve
             List<INeuralNetInternal> networkList = networks.Select(kvp => kvp.Value).ToList();
             networkList.Sort((t1, t2) => { return -fitnesses[t1.GetGuid()].CompareTo(fitnesses[t2.GetGuid()]); });
 
-            List<INeuralNetInternal> best2 = networkList.Take((int)(networkList.Count * 0.02)).ToList();
+            List<INeuralNetInternal> best10 = networkList.Take((int)(networkList.Count * 0.1)).ToList();
 
-            allNewNetworks.AddRange(networkList.Take(10));
-            allNewNetworks.AddRange(best2.SelectMany(n => n.Mutate(mutationProbability, maxMutationFactor, 42)));
+            List<double> fitness = networkList.Select(n => fitnesses[n.GetGuid()]).ToList();
+
+            allNewNetworks.AddRange(networkList.Take(5));
+            allNewNetworks.AddRange(best10.SelectMany(n => n.Mutate(mutationProbability, maxMutationFactor, 8)));
 
             while (allNewNetworks.Count < networkList.Count)
             {

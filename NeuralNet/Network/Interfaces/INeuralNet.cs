@@ -14,8 +14,6 @@ namespace NeuralNet.Network.Interfaces
     internal interface INeuralNetInternal : INeuralNet
     {
         Guid GetGuid();
-        INeuron GetNeuron(Guid guid);
-        INeuronConnection[] GetConnections(Guid guid);
         double ActivationFunction(double value);
         INeuralNetInternal[] Mutate(double probability, double factor, int networkCount);
     }
