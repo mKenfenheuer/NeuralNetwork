@@ -50,7 +50,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Projects\NeuralNet\NeuralNet.csproj">
+    <ProjectReference Include="..\NeuralNet\NeuralNet.csproj">
       <Project>{c0ecde32-d91e-411f-8745-3e9e4151cc0d}</Project>
       <Name>NeuralNet</Name>
     </ProjectReference>
