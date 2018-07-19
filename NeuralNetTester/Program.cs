@@ -19,9 +19,11 @@ namespace NeuralNetTester
             bool test = new NetworkIntegrityTest().Run();
             if (!test)
                 Console.WriteLine("Meh!");
-
-            new GeneticEvolveTest().Run().Wait();
-            Console.ReadKey();
+            while (true)
+            {
+                new GeneticEvolveTest().Run().Wait();
+                Task.Delay(1000).Wait();
+            }
         }
 
         

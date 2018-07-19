@@ -16,8 +16,6 @@ namespace NeuralNet.Training.GeneticEvolve
         int netPopulations;
         Tuple<int, int> layerRange;
         Tuple<int, int> layerLength;
-        double mutationProbability;
-        double maxMutationFactor;
         int inputs;
         int outputs;
         Func<double, double> activationFunction;
@@ -32,17 +30,17 @@ namespace NeuralNet.Training.GeneticEvolve
         INeuralNet bestNetwork;
         public int InputCount => inputs;
         public int OutputCount => outputs;
+        Func<double,double[]> mutationFunction;
 
         public GeneticEvolver(Tuple<int, int> layerRange,
                                 Tuple<int, int> layerLength,
                                 Func<INeuralNet, double> evaluationFunc,
                                 Func<double, double> activationFunction,
+                                Func<double, double[]> mutationFunction,
                                 int inputs,
                                 int outputs,
                                 int netsPerPopulation = 10,
-                                int netPopulations = 10,
-                                double mutationProbability = 0.2,
-                                double maxMutationFactor = 0.015)
+                                int netPopulations = 10)
         {
             this.inputs = inputs;
             this.outputs = outputs;
@@ -52,8 +50,7 @@ namespace NeuralNet.Training.GeneticEvolve
             this.netPopulations = netPopulations;
             this.layerRange = layerRange;
             this.layerLength = layerLength;
-            this.mutationProbability = mutationProbability;
-            this.maxMutationFactor = maxMutationFactor;
+            this.mutationFunction = mutationFunction;
 
         }
 
@@ -107,7 +104,8 @@ namespace NeuralNet.Training.GeneticEvolve
             List<double> fitness = networkList.Select(n => fitnesses[n.GetGuid()]).ToList();
 
             allNewNetworks.AddRange(networkList.Take(5).Select(n => n));
-            allNewNetworks.AddRange(best10.SelectMany(n => n.Mutate(mutationProbability, maxMutationFactor, 4)));
+            double[] mutationParams = mutationFunction(maxFitness);
+            allNewNetworks.AddRange(best10.SelectMany(n => n.Mutate(mutationParams[0], mutationParams[1], 4)));
 
             while (allNewNetworks.Count < networkList.Count * 0.75)
             {

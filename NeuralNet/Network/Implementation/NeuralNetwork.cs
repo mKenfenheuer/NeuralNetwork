@@ -77,10 +77,14 @@ namespace NeuralNet.Network.Implementation
             {
                 n.NeuronConnections.ToList().ForEach(c =>
                {
-                   if (RandomValues.RandomDouble() <= probability)
+                   double val = RandomValues.RandomDouble();
+                   if (val <= probability / 2)
                    {
                        double mutationFactor = 1 + factor * RandomValues.RandomDouble().Map(0, 1, -1, 1);
                        c.factor = c.factor * mutationFactor;
+                   } else if(val <= probability) {
+                       double mutationFactor = factor * RandomValues.RandomDouble().Map(0, 1, -1, 1);
+                       c.factor = c.factor + mutationFactor;
                    }
                });
             });

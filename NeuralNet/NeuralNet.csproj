@@ -43,6 +43,7 @@
     <Compile Include="Math\MathExtensions.cs" />
     <Compile Include="Math\MathF.cs" />
     <Compile Include="Math\Random.cs" />
+    <Compile Include="Math\SecureNumberGenerator.cs" />
     <Compile Include="Network\Implementation\InputNeuron.cs" />
     <Compile Include="Network\Implementation\NeuralNetwork.cs" />
     <Compile Include="Network\Implementation\CalculatedNeuron.cs" />
