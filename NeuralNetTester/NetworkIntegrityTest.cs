@@ -20,13 +20,15 @@ namespace NeuralNetTester
             double[] inputs = { 0.734, 0.92764 };
             double net1Out = net.Calculate(inputs)[0];
             double net2Out = net2.Calculate(inputs)[0];
-            net2.Mutate(0.3,0.5);
+            net2.Mutate(0.3, 0.5);
+            net2.Mutate(0.3, 0.5);
+            net2.Mutate(0.3, 0.5);
+            net2.Mutate(0.3, 0.5);
             double net1PostOut = net.Calculate(inputs)[0];
             double net2PostOut = net2.Calculate(inputs)[0];
-            bool test1 = net1Out - net1PostOut == 0;
-            bool test2 = net2Out - net2PostOut != 0;
-            bool test3 = net1Out - net2Out == 0;
-            return test1 && test2 && test3;
+            bool test1 = net1Out == net1PostOut;
+            bool test2 = net1Out == net2Out;
+            return test1 && test2;
         }
     }
 }

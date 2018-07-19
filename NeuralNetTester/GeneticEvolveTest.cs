@@ -16,18 +16,16 @@ namespace NeuralNetTester
         GeneticEvolver evolver;
         int tests = 10;
         List<double[]> testInputs = new List<double[]>();
-        public async Task Run()
+        public async Task<int> Run()
         {
 
             evolver = new GeneticEvolver(layerRange: new Tuple<int, int>(3, 6),
                                                             layerLength: new Tuple<int, int>(3, 8),
                                                             evaluationFunc: this.Evaluate,
-                                                            inputs: 5,
+                                                            inputs: 4,
                                                             outputs: 2,
-                                                            maxMutationFactor: 0.2,
+                                                            maxMutationFactor: 0.3,
                                                             mutationProbability: 0.5,
-                                                            netPopulations: 10,
-                                                            netsPerPopulation: 10,
                                                             activationFunction: System.Math.Tanh);
 
             for (int i = 0; i < tests; i++)
@@ -37,21 +35,14 @@ namespace NeuralNetTester
             }
 
             evolver.Init();
-            await evolver.Evaluate();
-            evolver.Evolve();
-            Guid best = new Guid();
-            double lastFitness = 0;
             while (evolver.MaxFitness < 1)
             {
                 await evolver.Evaluate();
-                Guid currentBest = evolver.BestNetwork.GetGuid();
-                if (currentBest != best && evolver.MaxFitness < lastFitness)
-                    Console.WriteLine("WTF?!");
-                Console.WriteLine("Generation {0} finished with max fitness {1}", evolver.Generation, evolver.MaxFitness);
-                Console.Title = String.Format("Generation {0}; Max fitness {1}", evolver.Generation, evolver.MaxFitness);
-                lastFitness = evolver.MaxFitness;
-                best = evolver.BestNetwork.GetGuid();
-                lastFitness = evolver.MaxFitness;
+                if (evolver.Generation % 10 == 0)
+                {
+                    Console.WriteLine("Generation {0} finished with max fitness {1}", evolver.Generation, evolver.MaxFitness);
+                    Console.Title = String.Format("Generation {0}; Max fitness {1}", evolver.Generation, evolver.MaxFitness);
+                }
                 evolver.Evolve();
             }
 
@@ -61,6 +52,7 @@ namespace NeuralNetTester
             double fitness = Fitness(expected, output);
             Console.WriteLine("Best network calc: IN: [{0}] OUT:{1} EXPECT: {2} FIT: {3}", String.Join(",", inputs), Math.Round(output, 4), expected, fitness);
             Console.WriteLine("Best network passed with fitness {0}", Evaluate(evolver.BestNetwork));
+            return evolver.Generation;
         }
 
         double[] RandomDoubles()
@@ -78,7 +70,7 @@ namespace NeuralNetTester
             {
                 double[] inputs = testInputs[i];
                 double[] outs = network.Calculate(inputs);
-                double expected = inputs.Sum() > 1 ? 1 : 0;
+                double expected = inputs.Sum() % 2;
                 fitnessTests[i] = Fitness(outs[0], expected);
             }
             return fitnessTests.Average();

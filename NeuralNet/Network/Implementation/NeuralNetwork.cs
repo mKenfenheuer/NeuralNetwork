@@ -44,7 +44,7 @@ namespace NeuralNet.Network.Implementation
                     {
                         CalculatedNeuron neuron = new CalculatedNeuron(activationFunction);
                         foreach (Neuron lastNeuron in lastLayer)
-                            neuron.AddConnection(new NeuronConnection(lastNeuron, RandomValues.RandomDouble()));
+                            neuron.AddConnection(new NeuronConnection(lastNeuron, RandomValues.RandomDouble().Map(0, 1, -1, 1)));
                         currentLayer.Add(neuron);
                     }
                     calculatedNeurons.Add(currentLayer.Cast<CalculatedNeuron>().ToArray());
