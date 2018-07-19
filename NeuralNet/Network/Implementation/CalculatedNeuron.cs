@@ -45,14 +45,20 @@ namespace NeuralNet.Network.Implementation
             return value;
         }
 
-        public override object Clone()
-        {
-            return new CalculatedNeuron(connections, activationFunction);
-        }
-
         public void AddConnection(NeuronConnection connection)
         {
             connections.Add(connection);
+        }
+
+        public double[] GetFactors()
+        {
+            return connections.Select(c => c.factor).ToArray();
+        }
+
+        public void SetFactors(double[] factors)
+        {
+            for (int i = 0; i < factors.Length; i++)
+                connections[i].factor = factors[i];
         }
     }
 }

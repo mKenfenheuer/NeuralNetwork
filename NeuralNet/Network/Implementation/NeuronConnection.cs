@@ -9,7 +9,7 @@ using NeuralNet.Math;
 
 namespace NeuralNet.Network.Implementation
 {
-    class NeuronConnection : INeuronConnection, ICloneable
+    class NeuronConnection : INeuronConnection
     {
         private Neuron from;
         internal Neuron FromNeuron => from;
@@ -25,11 +25,6 @@ namespace NeuralNet.Network.Implementation
         public double GetValue()
         {
             return FromNeuron.GetValue() * factor;
-        }
-
-        public object Clone()
-        {
-            return new NeuronConnection((Neuron)from.Clone(), factor);
         }
     }
 }

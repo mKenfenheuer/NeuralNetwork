@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NeuralNet.Network.Interfaces
 {
-    public interface INeuron : ICloneable
+    public interface INeuron
     {
         double GetValue();
         void Reset();

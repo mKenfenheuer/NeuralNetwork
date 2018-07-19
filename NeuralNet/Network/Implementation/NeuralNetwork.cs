@@ -9,28 +9,23 @@ using NeuralNet.Network.Interfaces;
 
 namespace NeuralNet.Network.Implementation
 {
-    internal class NeuralNetwork : INeuralNetInternal
+    public class NeuralNetwork : INeuralNetInternal
     {
         Guid guid = Guid.NewGuid();
         public Guid Guid => guid;
-        List<CalculatedNeuron[]> calculatedNeurons = new List<CalculatedNeuron[]>();
+        internal List<CalculatedNeuron[]> calculatedNeurons = new List<CalculatedNeuron[]>();
         List<InputNeuron> inputNeurons = new List<InputNeuron>();
         Func<double, double> activationFunction = System.Math.Tanh;
+        int[] layers = new int[0];
 
         public double ActivationFunction(double value)
         {
             return activationFunction(value);
         }
 
-        private NeuralNetwork(List<CalculatedNeuron[]> calculatedNeurons, List<InputNeuron> inputNeurons, Func<double, double> activationFunction)
-        {
-            this.activationFunction = activationFunction;
-            this.calculatedNeurons = calculatedNeurons;
-            this.inputNeurons = inputNeurons;
-        }
-
         public NeuralNetwork(int[] layers, Func<double, double> activationFunction)
         {
+            this.layers = layers;
             this.activationFunction = activationFunction;
 
             List<Neuron> lastLayer = new List<Neuron>();
@@ -76,7 +71,7 @@ namespace NeuralNet.Network.Implementation
             return Guid;
         }
 
-        internal void Mutate(double probability, double factor)
+        public void Mutate(double probability, double factor)
         {
             calculatedNeurons.SelectMany(n => n).ToList().ForEach(n =>
             {
@@ -91,7 +86,7 @@ namespace NeuralNet.Network.Implementation
             });
         }
 
-        public INeuralNetInternal[] Mutate(double probability, double factor, int networkCount)
+        public NeuralNetwork[] Mutate(double probability, double factor, int networkCount)
         {
             List<NeuralNetwork> networks = new List<NeuralNetwork>(networkCount);
             for (int i = 0; i < networkCount; i++)
@@ -105,7 +100,17 @@ namespace NeuralNet.Network.Implementation
 
         public object Clone()
         {
-            return new NeuralNetwork(calculatedNeurons.Clone(), inputNeurons.Clone(), activationFunction);
+            NeuralNetwork newNet = new NeuralNetwork(layers, activationFunction);
+
+            for (int layer = layers.Length - 2; layer >= 0; layer--)
+                for (int neuron = layers[layer + 1] - 1; neuron >= 0; neuron--)
+                {
+                    if (calculatedNeurons[layer][neuron].NeuronConnections.Length != newNet.calculatedNeurons[layer][neuron].NeuronConnections.Length)
+                        Console.WriteLine("WTF");
+                    double[] factors = calculatedNeurons[layer][neuron].GetFactors();
+                    newNet.calculatedNeurons[layer][neuron].SetFactors(factors);
+                }
+            return newNet;
         }
     }
 }

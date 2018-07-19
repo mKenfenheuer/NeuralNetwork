@@ -92,7 +92,7 @@ namespace NeuralNet.Training.GeneticEvolve
             List<INeuralNetInternal> networkList = networks.Select(kvp => kvp.Value).ToList();
             networkList.Sort((t1, t2) => { return -fitnesses[t1.GetGuid()].CompareTo(fitnesses[t2.GetGuid()]); });
             maxFitness = fitnesses[networkList[0].GetGuid()];
-            bestNetwork = networkList.FirstOrDefault();
+            bestNetwork = networkList[0];
         }
 
         public void Evolve()
@@ -106,7 +106,7 @@ namespace NeuralNet.Training.GeneticEvolve
 
             List<double> fitness = networkList.Select(n => fitnesses[n.GetGuid()]).ToList();
 
-            allNewNetworks.AddRange(networkList.Take(5));
+            allNewNetworks.AddRange(networkList.Take(5).Select(n => (INeuralNetInternal)n));
             allNewNetworks.AddRange(best10.SelectMany(n => n.Mutate(mutationProbability, maxMutationFactor, 8)));
 
             while (allNewNetworks.Count < networkList.Count)

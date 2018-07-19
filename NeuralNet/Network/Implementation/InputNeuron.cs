@@ -28,11 +28,5 @@ namespace NeuralNet.Network.Implementation
         {
             return MathF.Clamp(value, 0, 1);
         }
-        
-
-        public override object Clone()
-        {
-            return new InputNeuron();
-        }
     }
 }
