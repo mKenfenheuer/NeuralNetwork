@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="GeneticEvolveTest.cs" />
     <Compile Include="NetworkIntegrityTest.cs" />
+    <Compile Include="OCRTest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

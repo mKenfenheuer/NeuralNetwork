@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-
 
 using NeuralNet.Training.GeneticEvolve;
 using NeuralNet.Network.Interfaces;
