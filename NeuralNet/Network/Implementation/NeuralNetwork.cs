@@ -86,6 +86,40 @@ namespace NeuralNet.Network.Implementation
             });
         }
 
+        public NeuralNetwork DoSexyTimeWith(NeuralNetwork other)
+        {
+            if (Array.Equals(other.layers, layers))
+            {
+                NeuralNetwork newNet = new NeuralNetwork(layers, activationFunction);
+
+                for (int layer = layers.Length - 2; layer >= 0; layer--)
+                    for (int neuron = layers[layer + 1] - 1; neuron >= 0; neuron--)
+                    {
+                        double[] factors = calculatedNeurons[layer][neuron].GetFactors();
+                        double[] otherFactors = other.calculatedNeurons[layer][neuron].GetFactors();
+                        for (int i = 0; i < factors.Length; i++)
+                        {
+                            if (RandomValues.RandomDouble() > 0.5)
+                                factors[i] = otherFactors[i];
+                            else if (RandomValues.RandomDouble() <= 0.25)
+                                factors[i] = (otherFactors[i] + factors[i]) / 2.0;
+                        }
+                        newNet.calculatedNeurons[layer][neuron].SetFactors(factors);
+                    }
+
+                return newNet;
+            }
+            else
+            {
+                throw new ArgumentException("Cannot breed between different networks");
+            }
+        }
+
+        public bool WantsSexyTimeWith(NeuralNetwork other)
+        {
+            return Array.Equals(other.layers, layers);
+        }
+
         public NeuralNetwork[] Mutate(double probability, double factor, int networkCount)
         {
             List<NeuralNetwork> networks = new List<NeuralNetwork>(networkCount);

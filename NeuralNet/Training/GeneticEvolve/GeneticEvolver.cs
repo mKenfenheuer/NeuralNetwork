@@ -22,7 +22,7 @@ namespace NeuralNet.Training.GeneticEvolve
         int outputs;
         Func<double, double> activationFunction;
         Func<INeuralNet, double> evaluationFunc;
-        Dictionary<Guid, INeuralNetInternal> networks = new Dictionary<Guid, INeuralNetInternal>();
+        Dictionary<Guid, NeuralNetwork> networks = new Dictionary<Guid, NeuralNetwork>();
         Dictionary<Guid, double> fitnesses = new Dictionary<Guid, double>();
         public int Generation => generation;
         int generation;
@@ -89,7 +89,7 @@ namespace NeuralNet.Training.GeneticEvolve
                 }
             }
             )));
-            List<INeuralNetInternal> networkList = networks.Select(kvp => kvp.Value).ToList();
+            List<NeuralNetwork> networkList = networks.Select(kvp => kvp.Value).ToList();
             networkList.Sort((t1, t2) => { return -fitnesses[t1.GetGuid()].CompareTo(fitnesses[t2.GetGuid()]); });
             maxFitness = fitnesses[networkList[0].GetGuid()];
             bestNetwork = networkList[0];
@@ -97,17 +97,25 @@ namespace NeuralNet.Training.GeneticEvolve
 
         public void Evolve()
         {
-            List<INeuralNetInternal> allNewNetworks = new List<INeuralNetInternal>();
+            List<NeuralNetwork> allNewNetworks = new List<NeuralNetwork>();
 
-            List<INeuralNetInternal> networkList = networks.Select(kvp => kvp.Value).ToList();
+            List<NeuralNetwork> networkList = networks.Select(kvp => kvp.Value).ToList();
             networkList.Sort((t1, t2) => { return -fitnesses[t1.GetGuid()].CompareTo(fitnesses[t2.GetGuid()]); });
 
-            List<INeuralNetInternal> best10 = networkList.Take((int)(networkList.Count * 0.1)).ToList();
+            List<NeuralNetwork> best10 = networkList.Take((int)(networkList.Count * 0.1)).ToList();
 
             List<double> fitness = networkList.Select(n => fitnesses[n.GetGuid()]).ToList();
 
-            allNewNetworks.AddRange(networkList.Take(5).Select(n => (INeuralNetInternal)n));
-            allNewNetworks.AddRange(best10.SelectMany(n => n.Mutate(mutationProbability, maxMutationFactor, 8)));
+            allNewNetworks.AddRange(networkList.Take(5).Select(n => n));
+            allNewNetworks.AddRange(best10.SelectMany(n => n.Mutate(mutationProbability, maxMutationFactor, 4)));
+
+            while (allNewNetworks.Count < networkList.Count * 0.75)
+            {
+                NeuralNetwork n1 = networkList[RandomValues.RandomInt(0, networkList.Count - 1)];
+                NeuralNetwork n2 = networkList[RandomValues.RandomInt(0, networkList.Count - 1)];
+                if(n1.WantsSexyTimeWith(n2) && n2.WantsSexyTimeWith(n1))
+                    allNewNetworks.Add(n1.DoSexyTimeWith(n2));
+            }
 
             while (allNewNetworks.Count < networkList.Count)
             {
@@ -123,7 +131,7 @@ namespace NeuralNet.Training.GeneticEvolve
             networks.Clear();
             fitnesses.Clear();
 
-            foreach (INeuralNetInternal network in allNewNetworks)
+            foreach (NeuralNetwork network in allNewNetworks)
                 networks.Add(network.GetGuid(), network);
 
             generation++;
