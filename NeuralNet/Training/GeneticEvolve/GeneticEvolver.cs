@@ -30,7 +30,7 @@ namespace NeuralNet.Training.GeneticEvolve
         INeuralNet bestNetwork;
         public int InputCount => inputs;
         public int OutputCount => outputs;
-        Func<double,double[]> mutationFunction;
+        Func<double, double[]> mutationFunction;
 
         public GeneticEvolver(Tuple<int, int> layerRange,
                                 Tuple<int, int> layerLength,
@@ -70,7 +70,13 @@ namespace NeuralNet.Training.GeneticEvolve
                 }
             }
         }
+        public void AddNetwork(NeuralNetwork net)
+        {
+            if (net.Layers[0] != inputs && net.Layers[net.Layers.Length - 1] != outputs)
+                throw new ArgumentException("Network In and Outputs do not match Evolver Parameters");
 
+            networks[net.Guid] = net;
+        }
         public async Task Evaluate()
         {
             fitnesses.Clear();
@@ -111,7 +117,7 @@ namespace NeuralNet.Training.GeneticEvolve
             {
                 NeuralNetwork n1 = networkList[RandomValues.RandomInt(0, networkList.Count - 1)];
                 NeuralNetwork n2 = networkList[RandomValues.RandomInt(0, networkList.Count - 1)];
-                if(n1.WantsSexyTimeWith(n2) && n2.WantsSexyTimeWith(n1))
+                if (n1.WantsSexyTimeWith(n2) && n2.WantsSexyTimeWith(n1))
                     allNewNetworks.Add(n1.DoSexyTimeWith(n2));
             }
 

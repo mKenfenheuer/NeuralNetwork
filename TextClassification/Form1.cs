@@ -92,6 +92,9 @@ namespace TextClassification
 
         async Task Learn()
         {
+            if (File.Exists("..\\..\\..\\Networks\\TextClassificationNetwork.json"))
+                evolver.AddNetwork(NeuralNet.Network.Implementation.NeuralNetwork.Load(File.ReadAllText("..\\..\\..\\Networks\\TextClassificationNetwork.json")));
+
             evolver.Init();
             while (evolver.Generation < 500 && evolver.MaxFitness < 1)
             {
@@ -101,6 +104,7 @@ namespace TextClassification
                     Console.WriteLine("Generation {0} finished with max fitness {1}", evolver.Generation, evolver.MaxFitness);
                     Console.Title = String.Format("Generation {0}; Max fitness {1}", evolver.Generation, evolver.MaxFitness);
                     Evaluate(evolver.BestNetwork);
+                    File.WriteAllText("..\\..\\..\\Networks\\TextClassificationNetwork.json", evolver.BestNetwork.Save());
                 }
                 evolver.Evolve();
                 this.progressBar1.Value = (int)(100 * evolver.MaxFitness);

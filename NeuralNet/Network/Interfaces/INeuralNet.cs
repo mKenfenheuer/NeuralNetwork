@@ -12,6 +12,7 @@ namespace NeuralNet.Network.Interfaces
     {
         Guid GetGuid();
         double[] Calculate(double[] inputs);
+        string Save();
     }
 
     internal interface INeuralNetInternal : INeuralNet

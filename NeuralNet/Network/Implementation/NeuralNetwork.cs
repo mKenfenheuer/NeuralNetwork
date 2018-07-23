@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Newtonsoft.Json;
 using NeuralNet.Math;
 using NeuralNet.Network.Interfaces;
 
@@ -12,22 +13,60 @@ namespace NeuralNet.Network.Implementation
     public class NeuralNetwork : INeuralNetInternal
     {
         Guid guid = Guid.NewGuid();
+        [JsonProperty]
         public Guid Guid => guid;
+        [JsonIgnore]
         internal List<CalculatedNeuron[]> calculatedNeurons = new List<CalculatedNeuron[]>();
+        [JsonIgnore]
         List<InputNeuron> inputNeurons = new List<InputNeuron>();
+        [JsonIgnore]
         Func<double, double> activationFunction = System.Math.Tanh;
-        int[] layers = new int[0];
+        [JsonRequired]
+        public int[] Layers = new int[0];
+        [JsonRequired]
+        public double[][][] Weights
+        {
+            get
+            {
+                return calculatedNeurons.Select(n => n.Select(c => c.NeuronConnections.Select(nc => nc.factor).ToArray()).ToArray()).ToArray();
+            }
+        }
+
 
         public double ActivationFunction(double value)
         {
             return activationFunction(value);
         }
 
+        [JsonConstructor]
+        public NeuralNetwork(int[] layers, double[][][] weights, Guid guid)
+        {
+            if (guid != null)
+                this.guid = guid;
+            CreateLayers(layers);
+
+            for (int layer = Layers.Length - 2; layer >= 0; layer--)
+                for (int neuron = Layers[layer + 1] - 1; neuron >= 0; neuron--)
+                {
+                    if (weights[layer][neuron].Length != calculatedNeurons[layer][neuron].NeuronConnections.Length)
+                        Console.WriteLine("WTF");
+                    double[] factors = weights[layer][neuron];
+                    calculatedNeurons[layer][neuron].SetFactors(factors);
+                }
+        }
+
+
+
         public NeuralNetwork(int[] layers, Func<double, double> activationFunction)
         {
-            this.layers = layers;
             this.activationFunction = activationFunction;
+            CreateLayers(layers);
+            
+        }
 
+        private void CreateLayers(int[] layers)
+        {
+            this.Layers = layers;
             List<Neuron> lastLayer = new List<Neuron>();
             for (int i = 0; i < layers.Length; i++)
             {
@@ -51,6 +90,16 @@ namespace NeuralNet.Network.Implementation
                 }
                 lastLayer = currentLayer;
             }
+        }
+
+        public static NeuralNetwork Load(string json)
+        {
+            return JsonConvert.DeserializeObject<NeuralNetwork>(json);
+        }
+
+        public string Save()
+        {
+            return JsonConvert.SerializeObject(this);
         }
 
         public double[] Calculate(double[] inputs)
@@ -82,7 +131,9 @@ namespace NeuralNet.Network.Implementation
                    {
                        double mutationFactor = 1 + factor * RandomValues.RandomDouble().Map(0, 1, -1, 1);
                        c.factor = c.factor * mutationFactor;
-                   } else if(val <= probability) {
+                   }
+                   else if (val <= probability)
+                   {
                        double mutationFactor = factor * RandomValues.RandomDouble().Map(0, 1, -1, 1);
                        c.factor = c.factor + mutationFactor;
                    }
@@ -92,12 +143,12 @@ namespace NeuralNet.Network.Implementation
 
         public NeuralNetwork DoSexyTimeWith(NeuralNetwork other)
         {
-            if (Array.Equals(other.layers, layers))
+            if (Array.Equals(other.Layers, Layers))
             {
-                NeuralNetwork newNet = new NeuralNetwork(layers, activationFunction);
+                NeuralNetwork newNet = new NeuralNetwork(Layers, activationFunction);
 
-                for (int layer = layers.Length - 2; layer >= 0; layer--)
-                    for (int neuron = layers[layer + 1] - 1; neuron >= 0; neuron--)
+                for (int layer = Layers.Length - 2; layer >= 0; layer--)
+                    for (int neuron = Layers[layer + 1] - 1; neuron >= 0; neuron--)
                     {
                         double[] factors = calculatedNeurons[layer][neuron].GetFactors();
                         double[] otherFactors = other.calculatedNeurons[layer][neuron].GetFactors();
@@ -121,7 +172,7 @@ namespace NeuralNet.Network.Implementation
 
         public bool WantsSexyTimeWith(NeuralNetwork other)
         {
-            return Array.Equals(other.layers, layers);
+            return Array.Equals(other.Layers, Layers);
         }
 
         public NeuralNetwork[] Mutate(double probability, double factor, int networkCount)
@@ -138,10 +189,10 @@ namespace NeuralNet.Network.Implementation
 
         public object Clone()
         {
-            NeuralNetwork newNet = new NeuralNetwork(layers, activationFunction);
+            NeuralNetwork newNet = new NeuralNetwork(Layers, activationFunction);
 
-            for (int layer = layers.Length - 2; layer >= 0; layer--)
-                for (int neuron = layers[layer + 1] - 1; neuron >= 0; neuron--)
+            for (int layer = Layers.Length - 2; layer >= 0; layer--)
+                for (int neuron = Layers[layer + 1] - 1; neuron >= 0; neuron--)
                 {
                     if (calculatedNeurons[layer][neuron].NeuronConnections.Length != newNet.calculatedNeurons[layer][neuron].NeuronConnections.Length)
                         Console.WriteLine("WTF");

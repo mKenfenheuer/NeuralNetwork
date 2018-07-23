@@ -5,11 +5,11 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Collections;
 using System.Threading.Tasks;
-
+using System.IO;
 
 using NeuralNet.Training.GeneticEvolve;
 using NeuralNet.Network.Interfaces;
-using NeuralNet.Math;
+
 namespace NeuralNetTester
 {
     class OCRTest
@@ -21,12 +21,14 @@ namespace NeuralNetTester
         {
             GenerateTestInputs();
             evolver = new GeneticEvolver(layerRange: new Tuple<int, int>(Math.Min(testInputs[0].Length, testOutputs[0].Length), Math.Max(testInputs[0].Length, testOutputs[0].Length)),
-                                                            layerLength: new Tuple<int, int>(3, 5),
+                                                            layerLength: new Tuple<int, int>(3, 4),
                                                             evaluationFunc: this.Evaluate,
                                                             inputs: testInputs[0].Length,
                                                             outputs: testOutputs[0].Length,
                                                             activationFunction: ActivationFunc,
                                                             mutationFunction: MutationFunc);
+            if (File.Exists("..\\..\\..\\Networks\\OCRNetwork.json"))
+                evolver.AddNetwork(NeuralNet.Network.Implementation.NeuralNetwork.Load(File.ReadAllText("..\\..\\..\\Networks\\OCRNetwork.json")));
             evolver.Init();
             while (evolver.MaxFitness < 1)
             {
@@ -35,6 +37,7 @@ namespace NeuralNetTester
                 {
                     Console.WriteLine("Generation {0} finished with max fitness {1}", evolver.Generation, evolver.MaxFitness);
                     Console.Title = String.Format("Generation {0}; Max fitness {1}", evolver.Generation, evolver.MaxFitness);
+                    File.WriteAllText("..\\..\\..\\Networks\\OCRNetwork.json", evolver.BestNetwork.Save());
                 }
                 evolver.Evolve();
             }
@@ -44,7 +47,7 @@ namespace NeuralNetTester
 
         void GenerateTestInputs()
         {
-            for(int i = 48; i <= 122; i++)
+            for (int i = 48; i <= 122; i++)
             {
                 testInputs.Add(NewTest(i));
                 testOutputs.Add(Int2Bits(i));
