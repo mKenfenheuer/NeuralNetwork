@@ -103,7 +103,6 @@ namespace TextClassification
                 {
                     Console.WriteLine("Generation {0} finished with max fitness {1}", evolver.Generation, evolver.MaxFitness);
                     Console.Title = String.Format("Generation {0}; Max fitness {1}", evolver.Generation, evolver.MaxFitness);
-                    Evaluate(evolver.BestNetwork);
                     File.WriteAllText("..\\..\\..\\Networks\\TextClassificationNetwork.json", evolver.BestNetwork.Save());
                 }
                 evolver.Evolve();

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
 
 using NeuralNet.Training.GeneticEvolve;
 using NeuralNet.Network.Interfaces;
@@ -30,7 +31,8 @@ namespace NeuralNetTester
                 testInputs.Add(RandomDoubles());
                 Console.WriteLine("Generation of test input {0}: [{1}]", i + 1, String.Join(",", testInputs[i]));
             }
-
+            if (File.Exists("..\\..\\..\\Networks\\XOR.json"))
+                evolver.AddNetwork(NeuralNet.Network.Implementation.NeuralNetwork.Load(File.ReadAllText("..\\..\\..\\Networks\\XOR.json")));
             evolver.Init();
             while (evolver.MaxFitness < 1 && evolver.Generation < maxGenerations)
             {
@@ -39,6 +41,7 @@ namespace NeuralNetTester
                 {
                     Console.WriteLine("Generation {0} finished with max fitness {1}", evolver.Generation, evolver.MaxFitness);
                     Console.Title = String.Format("Generation {0}; Max fitness {1}", evolver.Generation, evolver.MaxFitness);
+                    File.WriteAllText("..\\..\\..\\Networks\\XOR.json", evolver.BestNetwork.Save());
                 }
                 evolver.Evolve();
             }
