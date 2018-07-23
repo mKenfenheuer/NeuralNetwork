@@ -1,0 +1,35 @@
+﻿{
+	"internet": [
+		"my internet is not working",
+		"i can not access the internet",
+		"internet is unreachable",
+		"i can not browse the web",
+		"www is not working"
+	],
+
+	"password": [
+		"i can not remember my password",
+		"i forgot my password",
+		"i can not login",
+		"password is not working",
+		"what is my password"
+	],
+
+	"email": [
+		"i can not send emails",
+		"i can not receive emails",
+    "no emails coming in",
+    "i do not get emails",
+    "my emails are not working"
+	],
+
+	"hardware": [
+		"my computer is not booting",
+		"my screen is black",
+		"the cursor does not move",
+		"the mouse does not work",
+		"i can not type",
+    "my battery is dead",
+    "i can not see on screen"
+	]
+}
