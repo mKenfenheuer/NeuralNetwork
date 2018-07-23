@@ -21,7 +21,7 @@ namespace NeuralNetTester
                 Console.WriteLine("Meh!");
             while (true)
             {
-                new GeneticEvolveTest().Run().Wait();
+                new OCRTest().Run().Wait();
                 Task.Delay(1000).Wait();
             }
         }
