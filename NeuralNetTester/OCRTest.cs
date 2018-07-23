@@ -20,8 +20,8 @@ namespace NeuralNetTester
         public async Task<int> Run()
         {
             GenerateTestInputs();
-            evolver = new GeneticEvolver(layerRange: new Tuple<int, int>(3, 6),
-                                                            layerLength: new Tuple<int, int>(3, 8),
+            evolver = new GeneticEvolver(layerRange: new Tuple<int, int>(Math.Min(testInputs[0].Length, testOutputs[0].Length), Math.Max(testInputs[0].Length, testOutputs[0].Length)),
+                                                            layerLength: new Tuple<int, int>(3, 5),
                                                             evaluationFunc: this.Evaluate,
                                                             inputs: testInputs[0].Length,
                                                             outputs: testOutputs[0].Length,
